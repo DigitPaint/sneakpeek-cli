@@ -13,7 +13,7 @@ const DEFAULTS = {
   path: null,
   project: null,
   gitlabProject: null,
-  apiUrl: "https://api.peek.digitpaint.nl"
+  apiUrl: process.env['SNEAKPEEK_API_URL'] || "https://api.peek.digitpaint.nl",
 }
 
 function getCiInfo() {
@@ -196,7 +196,7 @@ yargs
           type: 'string'
         })
         .option('api-url', {
-          describe: 'API URL to upload to',
+          describe: 'API URL to upload to. Can also be set through SNEAKPEEK_API_URL env variable',
           default: DEFAULTS.apiUrl,
           type: 'string'
         })
