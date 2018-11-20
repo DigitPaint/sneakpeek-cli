@@ -14,6 +14,7 @@ const DEFAULTS = {
   project: null,
   gitlabProject: null,
   apiUrl: process.env['SNEAKPEEK_API_URL'] || "https://api.peek.digitpaint.nl",
+  apiKey: process.env['SNEAKPEEK_API_KEY'] || null
 }
 
 function getCiInfo() {
@@ -125,6 +126,10 @@ function upload(zipfile, options = {}) {
   const url = sneakpeekUrl(options.apiUrl, options.project, metadata);
   const req = request.post(url).type('form');
 
+  if(options.apiKey && options.apiKey !== "") {
+    req.set("Authorization", options.apiKey)
+  }
+
   req.field('sha', metadata.sha);
   req.field('gitlab_project', options.gitlabProject);
   req.attach('file', zipfile);
@@ -145,8 +150,12 @@ function upload(zipfile, options = {}) {
   return req.then((r) => {
     console.log(r.body);
   }).catch((e) => {
-    console.error("Upload failed")
-    console.log(e);
+    if(e.status == 401) {
+      console.error("Unauthorized API access try again with a (differten) API-key")
+    } else {
+      console.error("Upload failed")
+      console.log(e);
+    }
   })
 }
 
@@ -163,7 +172,8 @@ function uploadCommand(argv) {
     project: argv.project,
     gitlabProject: argv.gitlabProject,
     path: argv.path,
-    apiUrl: argv.apiUrl
+    apiUrl: argv.apiUrl,
+    apiKey: argv.apiKey
   });
 
   // Validate path
@@ -198,6 +208,11 @@ yargs
         .option('api-url', {
           describe: 'API URL to upload to. Can also be set through SNEAKPEEK_API_URL env variable',
           default: DEFAULTS.apiUrl,
+          type: 'string'
+        })
+        .option('api-key', {
+          describe: 'API key to use. Can also be set through SNEAKPEEK_API_KEY env variable',
+          default: DEFAULTS.apiKey,
           type: 'string'
         })
         .demandOption(['path', 'project', 'gitlab-project'])
