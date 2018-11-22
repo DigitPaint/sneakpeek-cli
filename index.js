@@ -73,7 +73,7 @@ function gitInfo() {
 }
 
 function sneakpeekUrl(base, project, git) {
-  const url = [base, 'projects', project]
+  const url = [base, 'projects', encodeURIComponent(project)]
 
   const reftypeToUrlMap = {
     "branch" : "branches",
